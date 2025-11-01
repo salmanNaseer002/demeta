@@ -4,13 +4,52 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
 
+// --- 0. TYPE DEFINITIONS ---
+
+// Define the structure for a single blog post
+interface Post {
+  id: number;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  author: string;
+  image: string;
+  longContent: string[];
+}
+
+// Define the structure for the simplified trending posts list
+interface TrendingPost {
+  id: number;
+  title: string;
+  category: string;
+}
+
+// Define the props for components
+interface PostComponentProps {
+  post: Post;
+  setViewingPostId: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
+interface PaginationProps {
+  postsPerPage: number;
+  totalPosts: number;
+  paginate: (pageNumber: number) => void;
+  currentPage: number;
+}
+
+interface SidebarProps {
+  setViewingPostId: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
 // --- 1. SAMPLE DATA GENERATION (40 ARTICLES) ---
 
-// Helper function for unique, descriptive image seeds
-const getImageUrl = (seed) => `https://picsum.photos/seed/${seed}/800/400`;
+// Helper function for unique, descriptive image seeds - Correctly typed
+const getImageUrl = (seed: string) =>
+  `https://picsum.photos/seed/${seed}/800/400`;
 
-// --- POSTS Data (The 40 Articles - Retained from previous response) ---
-const allPosts = [
+// --- POSTS Data (The 40 Articles) ---
+const allPosts: Post[] = [
   // --- CORE & FEATURED POSTS (IDs 1-4) ---
   {
     id: 1,
@@ -679,9 +718,11 @@ const allPosts = [
 ];
 // --- END POSTS Data ---
 
-// Re-map the featured and trending posts to the new IDs
-const featuredPost = allPosts.find((p) => p.id === 1);
-const trendingPosts = [
+// Locate the featured post (ID 1), ensuring it exists
+const featuredPost: Post = allPosts.find((p) => p.id === 1) as Post; // Type assertion since we know it exists
+
+// Trending posts data, explicitly typed to the simpler structure
+const trendingPosts: TrendingPost[] = [
   {
     id: 3,
     title:
@@ -707,7 +748,11 @@ const trendingPosts = [
 /**
  * Renders the expanded content for a single post (Simulated View)
  */
-const SinglePostContent = ({ post, setViewingPostId }) => (
+// SinglePostContent: Explicitly define the Post type in props
+const SinglePostContent: React.FC<PostComponentProps> = ({
+  post,
+  setViewingPostId,
+}) => (
   <article className="bg-white p-8 md:p-12 rounded-2xl shadow-3xl mt-10">
     <h2 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h2>
     <p className="text-sm text-gray-500 mb-8 border-b pb-4">
@@ -716,7 +761,14 @@ const SinglePostContent = ({ post, setViewingPostId }) => (
     </p>
 
     <div className="relative w-full h-96 mb-8 rounded-xl overflow-hidden">
-      <Image src={post.image} alt={post.title} fill className="object-cover" />
+      {/* Type assertion needed for fill prop when using Image */}
+      <Image
+        src={post.image}
+        alt={post.title}
+        fill
+        className="object-cover"
+        sizes="(max-width: 1024px) 100vw, 800px"
+      />
     </div>
 
     <div className="prose prose-lg max-w-none">
@@ -740,10 +792,18 @@ const SinglePostContent = ({ post, setViewingPostId }) => (
 );
 
 // Featured Post Card
-const FeaturedPostCard = ({ post, setViewingPostId }) => (
+// FeaturedPostCard: Explicitly define the Post type in props
+const FeaturedPostCard: React.FC<PostComponentProps> = ({
+  post,
+  setViewingPostId,
+}) => (
   <Link
     href="#main-post-content"
-    onClick={() => setViewingPostId(post.id)}
+    // Event type is implicitly inferred, but explicitly set here for clarity
+    onClick={(e) => {
+      e.preventDefault(); // Prevents default link navigation if Link component used
+      setViewingPostId(post.id);
+    }}
     className="block mb-16 group"
   >
     <div className="relative overflow-hidden rounded-2xl shadow-3xl transition duration-500 ease-in-out transform hover:scale-[1.01] hover:shadow-4xl">
@@ -776,7 +836,11 @@ const FeaturedPostCard = ({ post, setViewingPostId }) => (
 );
 
 // Standard Post Item
-const PostListItem = ({ post, setViewingPostId }) => (
+// PostListItem: Explicitly define the Post type in props
+const PostListItem: React.FC<PostComponentProps> = ({
+  post,
+  setViewingPostId,
+}) => (
   <article className="flex flex-col md:flex-row border-b border-gray-200 pb-10 mb-10 last:border-b-0 last:pb-0 last:mb-0">
     <div className="md:w-2/3 md:pr-10">
       <span className="text-sm font-semibold uppercase text-emerald-600 tracking-wider">
@@ -784,7 +848,10 @@ const PostListItem = ({ post, setViewingPostId }) => (
       </span>
       <Link
         href="#main-post-content"
-        onClick={() => setViewingPostId(post.id)}
+        onClick={(e) => {
+          e.preventDefault();
+          setViewingPostId(post.id);
+        }}
         className="block mt-2 mb-2 group"
       >
         <h3 className="text-2xl font-bold text-gray-900 transition-colors duration-150 group-hover:text-emerald-700">
@@ -811,8 +878,13 @@ const PostListItem = ({ post, setViewingPostId }) => (
 );
 
 // Pagination Component
-const Pagination = ({ postsPerPage, totalPosts, paginate, currentPage }) => {
-  const pageNumbers = [];
+const Pagination: React.FC<PaginationProps> = ({
+  postsPerPage,
+  totalPosts,
+  paginate,
+  currentPage,
+}) => {
+  const pageNumbers: number[] = [];
   const totalPages = Math.ceil(totalPosts / postsPerPage);
 
   for (let i = 1; i <= totalPages; i++) {
@@ -878,9 +950,12 @@ const Pagination = ({ postsPerPage, totalPosts, paginate, currentPage }) => {
 };
 
 // Sidebar (Cleaned up, only Trending Now remains)
-const Sidebar = ({ setViewingPostId }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setViewingPostId }) => {
   // Helper to get the actual post data for the sidebar list
-  const getTrendingPost = (id) => allPosts.find((p) => p.id === id);
+  const getTrendingPost = (id: number): Post => {
+    // Find the post, and use type assertion because we know these IDs exist
+    return allPosts.find((p) => p.id === id) as Post;
+  };
 
   return (
     <aside className="space-y-10">
@@ -891,7 +966,7 @@ const Sidebar = ({ setViewingPostId }) => {
         </h3>
         <ul className="space-y-6">
           {trendingPosts.map((post, index) => {
-            const actualPost = getTrendingPost(post.id);
+            const actualPost: Post = getTrendingPost(post.id);
             return (
               <li
                 key={post.id}
@@ -902,7 +977,10 @@ const Sidebar = ({ setViewingPostId }) => {
                 </span>
                 <Link
                   href="#main-post-content"
-                  onClick={() => setViewingPostId(post.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setViewingPostId(actualPost.id);
+                  }}
                   className="text-gray-800 hover:text-emerald-600 font-medium text-lg leading-snug transition-colors duration-150"
                 >
                   {actualPost.title}
@@ -921,40 +999,46 @@ const Sidebar = ({ setViewingPostId }) => {
 
 // --- 3. MAIN BLOG PAGE COMPONENT ---
 export default function DemetaBlogPage() {
-  const [viewingPostId, setViewingPostId] = React.useState(null);
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const postsPerPage = 10;
+  // viewingPostId can be null or a number
+  const [viewingPostId, setViewingPostId] = React.useState<number | null>(null);
+  const [currentPage, setCurrentPage] = React.useState<number>(1);
+  const postsPerPage: number = 10;
 
-  const currentPost = allPosts.find((post) => post.id === viewingPostId);
+  // currentPost can be undefined if not found, hence Post | undefined
+  const currentPost: Post | undefined = allPosts.find(
+    (post) => post.id === viewingPostId
+  );
 
   // Logic for displaying current posts based on pagination
-  const allPostsExceptFeatured = allPosts.filter(
+  const allPostsExceptFeatured: Post[] = allPosts.filter(
     (p) => p.id !== featuredPost.id
   );
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = allPostsExceptFeatured.slice(
+  const indexOfLastPost: number = currentPage * postsPerPage;
+  const indexOfFirstPost: number = indexOfLastPost - postsPerPage;
+  const currentPosts: Post[] = allPostsExceptFeatured.slice(
     indexOfFirstPost,
     indexOfLastPost
   );
 
   // Change page handler for pagination
-  const paginate = (pageNumber) => {
+  const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    // Smooth scroll to the top of the main content when changing pages
-    document
-      .getElementById("main-post-content")
-      ?.scrollIntoView({ behavior: "smooth" });
+    // Smooth scroll logic, checking if element exists
+    const mainContent = document.getElementById("main-post-content");
+    if (mainContent) {
+      mainContent.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   // If a post is being viewed, render the SinglePostContent
-  if (viewingPostId && currentPost) {
+  if (viewingPostId !== null && currentPost) {
     return (
       <div
         id="main-post-content"
         className="bg-gray-50 min-h-screen pt-16 pb-20"
       >
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
+          {/* currentPost is guaranteed to be a Post object here due to the check */}
           <SinglePostContent
             post={currentPost}
             setViewingPostId={setViewingPostId}
@@ -995,7 +1079,7 @@ export default function DemetaBlogPage() {
               Latest Articles (Page {currentPage})
             </h2>
             <div className="space-y-12">
-              {currentPosts.map((post) => (
+              {currentPosts.map((post: Post) => (
                 <PostListItem
                   key={post.id}
                   post={post}
@@ -1004,6 +1088,7 @@ export default function DemetaBlogPage() {
               ))}
             </div>
 
+            {/* Pagination Controls */}
             <Pagination
               postsPerPage={postsPerPage}
               totalPosts={allPostsExceptFeatured.length}

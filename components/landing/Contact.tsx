@@ -7,13 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
-import { usePathname } from "next/navigation"; // 👈 key fix
+import { usePathname } from "next/navigation";
 
-// Register ScrollTrigger plugin safely (only on client)
 if (
   typeof window !== "undefined" &&
-  gsap &&
-  !gsap.core.globals().ScrollTrigger
+  !(gsap.core as any).globals().ScrollTrigger
 ) {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -36,9 +34,8 @@ const initialState: FormState = {
 
 const Contact = forwardRef<HTMLElement>((props, ref) => {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const pathname = usePathname(); // 👈 triggers useEffect when route changes
+  const pathname = usePathname();
 
-  // combine forwarded ref with local ref
   const setRefs = (element: HTMLElement | null) => {
     sectionRef.current = element;
     if (typeof ref === "function") ref(element);
@@ -46,7 +43,6 @@ const Contact = forwardRef<HTMLElement>((props, ref) => {
       (ref as React.MutableRefObject<HTMLElement | null>).current = element;
   };
 
-  // 🩵 GSAP Animation — runs every time pathname changes
   useEffect(() => {
     if (!sectionRef.current) return;
 
@@ -69,12 +65,10 @@ const Contact = forwardRef<HTMLElement>((props, ref) => {
     );
 
     return () => {
-      // cleanup on unmount
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [pathname]); // 👈 re-run when navigating back
+  }, [pathname]);
 
-  // --- form logic ---
   const [form, setForm] = useState<FormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -130,11 +124,10 @@ const Contact = forwardRef<HTMLElement>((props, ref) => {
     <section
       ref={setRefs}
       id="contact"
-      className="w-full py-16 md:py-24 bg-[#e5f4eb]" // 👈 solid, light pastel green background
+      className="w-full py-16 md:py-24 bg-[#e5f4eb]"
     >
       <div className="w-full px-6 md:px-12 lg:px-24">
         <div className="grid gap-8 lg:grid-cols-2 items-start">
-          {/* Left Info Section */}
           <div className="space-y-6">
             <div className="inline-block rounded-lg bg-[#5ebc66]/20 px-3 py-1 text-sm font-semibold text-[#172737] contact-item">
               Contact Us

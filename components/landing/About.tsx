@@ -14,16 +14,17 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePathname } from "next/navigation";
 
-// ✅ Register ScrollTrigger only once on the client
-if (typeof window !== "undefined" && !gsap.core.globals().ScrollTrigger) {
+if (
+  typeof window !== "undefined" &&
+  !(gsap.core as any).globals().ScrollTrigger
+) {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 const About = forwardRef<HTMLElement>((props, ref) => {
   const sectionRef = useRef<HTMLElement>(null);
-  const pathname = usePathname(); // 🔥 detect route changes
+  const pathname = usePathname();
 
-  // Combine forwarded and local refs
   const setRefs = (element: HTMLElement | null) => {
     sectionRef.current = element;
     if (typeof ref === "function") ref(element);
