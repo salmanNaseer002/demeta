@@ -10,52 +10,63 @@ import {
   Package,
   HeartPulse,
 } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePathname } from "next/navigation";
 
-// Define the component using forwardRef to allow external ref attachment
-const AboutDemeta = forwardRef<HTMLElement>((props, ref) => {
+// ✅ Register ScrollTrigger only once on the client
+if (typeof window !== "undefined" && !gsap.core.globals().ScrollTrigger) {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const About = forwardRef<HTMLElement>((props, ref) => {
   const sectionRef = useRef<HTMLElement>(null);
+  const pathname = usePathname(); // 🔥 detect route changes
 
-  // Combine the forwarded ref with our local ref
+  // Combine forwarded and local refs
   const setRefs = (element: HTMLElement | null) => {
-    // Update our local ref
-    if (sectionRef.current !== element) {
-      sectionRef.current = element;
-    }
-
-    // Forward the ref
-    if (typeof ref === "function") {
-      ref(element);
-    } else if (ref) {
-      (ref as React.MutableRefObject<HTMLElement | null>).current = element;
-    }
+    sectionRef.current = element;
+    if (typeof ref === "function") ref(element);
+    else if (ref && "current" in ref) ref.current = element;
   };
 
-  // The useEffect hook retains the structure intended for scroll-based animation
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!sectionRef.current || typeof window === "undefined") return;
 
-    if (sectionRef.current) {
-      const aboutItems = sectionRef.current.querySelectorAll(".about-item");
+    const aboutItems = sectionRef.current.querySelectorAll(".about-item");
 
-      // NOTE: External GSAP/ScrollTrigger library calls are commented out
-      // as they cannot be imported/initialized in this single-file environment,
-      // but the structural logic is preserved as requested.
+    // 🔥 Kill old animations and ScrollTriggers when re-entering
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    gsap.killTweensOf(aboutItems);
 
-      // gsap.from(aboutItems, { ... });
-
-      if (aboutItems.length > 0) {
-        console.log(
-          "Demeta About section initialized. Ready for external animation logic."
-        );
+    // Animate in with ScrollTrigger
+    gsap.fromTo(
+      aboutItems,
+      { opacity: 0, x: -50 },
+      {
+        opacity: 1,
+        x: 0,
+        stagger: 0.2,
+        duration: 0.8,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          once: false, // allow re-trigger when coming back
+        },
       }
-    }
-  }, []);
+    );
 
-  // Professional image URL to represent comprehensive medical finance/RCM
+    // ✅ Cleanup when unmounting or navigating away
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      gsap.killTweensOf(aboutItems);
+    };
+  }, [pathname]); // ✅ re-run when user navigates back
+
   const medicalImage =
     "https://placehold.co/450x450/10b981/ffffff?text=Demeta+RCM+Platform";
 
-  // Array of key value propositions focusing on ALL services
   const valuePropositions = [
     {
       text: "Full-Spectrum RCM: From Patient Intake to Final Collection",
@@ -77,12 +88,12 @@ const AboutDemeta = forwardRef<HTMLElement>((props, ref) => {
   return (
     <section
       ref={setRefs}
-      id="about-medical"
-      className="w-full py-16 md:py-24 bg-gray-50"
+      id="about"
+      className="w-full py-16 md:py-24 bg-gray-50 transition-opacity duration-500"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-12 items-center">
-          {/* Image/Visual Section */}
+          {/* Image Section */}
           <div className="flex justify-center order-2 lg:order-1 about-item">
             <div className="w-full max-w-md h-96 relative">
               <img
@@ -91,19 +102,18 @@ const AboutDemeta = forwardRef<HTMLElement>((props, ref) => {
                 className="rounded-xl object-cover shadow-2xl transition duration-500 ease-in-out hover:shadow-green-400/50"
                 loading="lazy"
                 onError={(e) => {
-                  e.currentTarget.onerror = null; // Prevents infinite loop
+                  e.currentTarget.onerror = null;
                   e.currentTarget.src =
                     "https://placehold.co/450x450/10b981/ffffff?text=Demeta+RCM+Platform";
                 }}
               />
-              {/* Optional: Add an icon overlay for visual appeal */}
               <div className="absolute top-5 left-5 p-3 rounded-full bg-white shadow-xl text-green-600">
                 <DollarSign className="h-8 w-8" />
               </div>
             </div>
           </div>
 
-          {/* Content Section */}
+          {/* Text Section */}
           <div className="space-y-6 text-left order-1 lg:order-2">
             <div className="inline-block rounded-full bg-green-200 px-4 py-1 text-sm font-bold tracking-wider text-green-800 about-item">
               Meet Demeta: Your RCM Partner
@@ -116,8 +126,8 @@ const AboutDemeta = forwardRef<HTMLElement>((props, ref) => {
 
             <p className="text-lg text-gray-700 max-w-xl about-item">
               Demeta offers a complete, wall-to-wall suite of services—from
-              initial patient verification and detailed Medical Coding to
-              aggressive Denial Management and final Collections. We handle
+              initial patient verification and detailed medical coding to
+              aggressive denial management and final collections. We handle
               everything so your team can focus entirely on patient care.
             </p>
 
@@ -141,6 +151,6 @@ const AboutDemeta = forwardRef<HTMLElement>((props, ref) => {
   );
 });
 
-AboutDemeta.displayName = "AboutDemeta";
+About.displayName = "About";
 
-export default AboutDemeta;
+export default About;

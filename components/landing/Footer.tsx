@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, forwardRef, useCallback } from "react"; // Added useCallback
+import Link from "next/link";
 import { Twitter, Linkedin } from "lucide-react";
 
 // Link Component replacement for compatibility, updated to handle smooth scrolling
@@ -158,8 +159,12 @@ const Footer = forwardRef<HTMLElement>((props, ref) => {
           {/* Resources & Legal */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold">Resources</h3>
-            <ul className="space-y-3 text-base text-gray-400">
-              <li>
+            <ul className="flex flex-col space-y-3 text-base text-gray-400">
+              <Link href="/hipaa-compliance">HIPAA Compliance</Link>
+              <Link href="/privacy-policy">Privacy Policy</Link>
+              <Link href="/terms-of-service">Terms of Service</Link>
+              <Link href="/blog">Blog & Insights</Link>
+              {/* <li>
                 <SimpleLink
                   href="#"
                   className="hover:text-blue-400 transition-colors"
@@ -190,7 +195,7 @@ const Footer = forwardRef<HTMLElement>((props, ref) => {
                 >
                   Blog & Insights
                 </SimpleLink>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

@@ -2,10 +2,7 @@
 
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-// NOTE: GSAP and ScrollTrigger imports/registrations are omitted for single-file environment compatibility,
-// but the structural logic for refs and useEffect remains for external animation setup if needed.
 
-// Testimonial data specific to medical billing for Demeta (using fictional names)
 const medicalTestimonials = [
   {
     name: "Dr. Anya Sharma",
@@ -38,12 +35,11 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
   const sectionRef = useRef<HTMLElement>(null);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  // Combine the forwarded ref with our local ref
   const setRefs = (element: HTMLElement | null) => {
     if (sectionRef.current !== element) {
       sectionRef.current = element;
     }
-    // Forward the ref, handling both function and object ref types
+
     if (typeof ref === "function") {
       ref(element);
     } else if (ref) {
@@ -51,7 +47,6 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
     }
   };
 
-  // Carousel navigation
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) =>
       prev === medicalTestimonials.length - 1 ? 0 : prev + 1
@@ -64,23 +59,20 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
     );
   };
 
-  // Auto-rotate testimonials and setup animation trigger structure
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Structural logic for external animation setup
     if (sectionRef.current) {
       const testimonialContent = sectionRef.current.querySelector(
         ".testimonial-content"
       );
       if (testimonialContent) {
-        // Placeholder for external GSAP/ScrollTrigger logic
       }
     }
 
     const interval = setInterval(() => {
       nextTestimonial();
-    }, 8000); // Auto-rotate every 8 seconds
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [currentTestimonial]);
@@ -88,12 +80,11 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
   return (
     <section
       ref={setRefs}
-      id="demeta-testimonials"
+      id="testimonials"
       className="w-full py-16 md:py-24 bg-gray-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center space-y-8 text-center">
-          {/* Section Heading */}
           <div className="space-y-4">
             <div className="inline-block rounded-full bg-blue-100 px-4 py-1 text-sm font-bold tracking-wider text-blue-700">
               Hear From Our Valued Partners
@@ -108,15 +99,12 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
             </p>
           </div>
 
-          {/* Testimonial Carousel */}
           <div className="relative w-full max-w-4xl pt-8 pb-12">
             <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 transition-all duration-500 ease-in-out testimonial-content">
-              {/* Main Testimonial Text */}
               <p className="text-xl md:text-2xl italic text-gray-800 mb-8 leading-relaxed font-serif">
                 "{medicalTestimonials[currentTestimonial].text}"
               </p>
 
-              {/* Author Information */}
               <div className="flex flex-col items-center justify-center">
                 <h4 className="text-lg md:text-xl font-bold text-gray-900 mt-4">
                   {medicalTestimonials[currentTestimonial].name}
@@ -127,7 +115,6 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
               </div>
             </div>
 
-            {/* Carousel Navigation Buttons */}
             <button
               onClick={prevTestimonial}
               className="absolute left-0 top-1/2 -translate-y-1/2 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform -translate-x-1/2"
@@ -144,7 +131,6 @@ const Testimonials = forwardRef<HTMLElement>((props, ref) => {
             </button>
           </div>
 
-          {/* Indicators */}
           <div className="flex items-center justify-center gap-3 mt-6">
             {medicalTestimonials.map((_, index) => (
               <button
