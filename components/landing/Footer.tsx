@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Twitter, Linkedin } from "lucide-react";
 
 // Link Component replacement for compatibility, updated to handle smooth scrolling
-const SimpleLink = ({ href, className, children }: any) => {
+const SimpleLink = ({ href, className, target, children }: any) => {
   const handleClick = useCallback(
     (event: any) => {
       // Check if the link is an internal fragment link (e.g., #about)
@@ -22,7 +22,7 @@ const SimpleLink = ({ href, className, children }: any) => {
   );
 
   return (
-    <a href={href} className={className} onClick={handleClick}>
+    <a href={href} className={className} target={target} onClick={handleClick}>
       {children}
     </a>
   );
@@ -207,17 +207,11 @@ const Footer = forwardRef<HTMLElement>((props, ref) => {
             reserved.
           </p>
           <div className="flex space-x-5 mt-4 md:mt-0">
-            {/* Using blue color for social icons for consistency */}
             <SimpleLink
-              href="#"
+              href="https://www.linkedin.com/company/demetasolutions"
               className="text-gray-400 hover:text-blue-400 transition-colors"
-            >
-              <span className="sr-only">Twitter</span>
-              <Twitter className="h-5 w-5" />
-            </SimpleLink>
-            <SimpleLink
-              href="#"
-              className="text-gray-400 hover:text-blue-400 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <span className="sr-only">LinkedIn</span>
               <Linkedin className="h-5 w-5" />
